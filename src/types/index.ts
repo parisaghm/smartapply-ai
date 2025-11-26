@@ -7,8 +7,12 @@ export interface JobApplication {
   jobTitle: string;
   dateApplied: string;
   jobLink?: string;
-  resumeText?: string;
+  location?: string;
+  contactPerson?: string;
+  interviewStep?: string;
   status: JobStatus;
+  reasonOutcome?: string;
+  resumeText?: string;
   notes?: string;
   followUpDate?: string;
   lastUpdated: string;
@@ -18,6 +22,9 @@ export interface ResumeAnalysis {
   strengths: string[];
   improvements: string[];
   tailoring: string[];
+  customizedResume?: string;
+  specificChanges?: string;
+  coverLetter?: string;
 }
 
 export interface User {

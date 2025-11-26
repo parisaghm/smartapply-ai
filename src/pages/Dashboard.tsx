@@ -3,7 +3,7 @@ import React from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import KanbanBoard from "@/components/ui/KanbanBoard";
 import Header from "@/components/layout/Header";
-import UpcomingReminders from "@/components/dashboard/UpcomingReminders";
+// import UpcomingReminders from "@/components/dashboard/UpcomingReminders";
 import { Card, CardContent } from "@/components/ui/card";
 import { useJobs } from "@/contexts/JobsContext";
 import { format } from "date-fns";
@@ -38,7 +38,7 @@ const Dashboard: React.FC = () => {
       <Header 
         title="Dashboard" 
         subtitle="Track your job search progress" 
-        showAddButton
+        // showAddButton
       />
 
       {/* Stat Cards */}
@@ -106,12 +106,12 @@ const Dashboard: React.FC = () => {
         </Card>
 
         {/* Task Management */}
-        <Card className="bg-white border border-gray-200 shadow-sm rounded-lg">
+        {/* <Card className="bg-white border border-gray-200 shadow-sm rounded-lg">
           <CardContent className="p-6">
             <h2 className="font-semibold text-xl mb-4">Task Management</h2>
             <KanbanBoard />
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/*  Upcoming Reminders */}
          {/* <UpcomingReminders jobs={jobs} /> */}

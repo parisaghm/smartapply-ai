@@ -1,30 +1,11 @@
-
-import React from "react";
+import React, { useMemo } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import Header from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, Legend } from 'recharts';
 import { ChartContainer } from "@/components/ui/chart";
-
-// Sample data for the various charts
-const weeklyApplicationData = [
-  { week: 'Oct 16-22', applications: 2 },
-  { week: 'Oct 23-29', applications: 3 },
-  { week: 'Oct 30-Nov 5', applications: 4 },
-  { week: 'Nov 6-12', applications: 5 },
-  { week: 'Nov 13-19', applications: 2 },
-];
-
-const statusData = [
-  { name: 'Interested', value: 17, color: '#1e88e5' },
-  { name: 'Applied', value: 17, color: '#00c9a7' },
-  { name: 'Interview', value: 33, color: '#ffbb33' },
-  { name: 'Rejected', value: 17, color: '#ff6b6b' },
-  { name: 'Offer', value: 17, color: '#9c7df3' },
-];
-
-const offerRate = 17; // Percentage
-const averageDaysToInterview = 7.5;
+import { useJobs } from "@/contexts/JobsContext";
+import { startOfWeek, endOfWeek, format, differenceInDays, parseISO } from 'date-fns';
 
 const config = {
   interested: { color: '#1e88e5' },
@@ -36,6 +17,71 @@ const config = {
 };
 
 const Analytics = () => {
+  const { jobs } = useJobs();
+
+  // Calculate status breakdown
+  const statusData = useMemo(() => {
+    const statusCounts = jobs.reduce((acc, job) => {
+      acc[job.status] = (acc[job.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return [
+      { name: 'Interested', value: statusCounts['interested'] || 0, color: '#1e88e5' },
+      { name: 'Applied', value: statusCounts['applied'] || 0, color: '#00c9a7' },
+      { name: 'Interview', value: statusCounts['interview'] || 0, color: '#ffbb33' },
+      { name: 'Rejected', value: statusCounts['rejected'] || 0, color: '#ff6b6b' },
+      { name: 'Offer', value: statusCounts['offer'] || 0, color: '#9c7df3' },
+    ].filter(item => item.value > 0);
+  }, [jobs]);
+
+  // Calculate weekly application data (last 5 weeks)
+  const weeklyApplicationData = useMemo(() => {
+    const weeks: { week: string; applications: number }[] = [];
+    const now = new Date();
+    
+    for (let i = 4; i >= 0; i--) {
+      const weekStart = startOfWeek(new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000));
+      const weekEnd = endOfWeek(weekStart);
+      
+      const count = jobs.filter(job => {
+        if (!job.dateApplied) return false;
+        const appDate = parseISO(job.dateApplied);
+        return appDate >= weekStart && appDate <= weekEnd;
+      }).length;
+
+      weeks.push({
+        week: `${format(weekStart, 'MMM d')}-${format(weekEnd, 'd')}`,
+        applications: count,
+      });
+    }
+    
+    return weeks;
+  }, [jobs]);
+
+  // Calculate offer rate
+  const offerRate = useMemo(() => {
+    const totalApplied = jobs.filter(job => job.status !== 'interested').length;
+    const offers = jobs.filter(job => job.status === 'offer').length;
+    return totalApplied > 0 ? Math.round((offers / totalApplied) * 100) : 0;
+  }, [jobs]);
+
+  // Calculate average days to interview (estimated based on time since application)
+  const averageDaysToInterview = useMemo(() => {
+    const interviewJobs = jobs.filter(job => 
+      job.status === 'interview' && job.dateApplied
+    );
+    
+    if (interviewJobs.length === 0) return 0;
+    
+    const totalDays = interviewJobs.reduce((sum, job) => {
+      const applied = parseISO(job.dateApplied!);
+      const now = new Date();
+      return sum + differenceInDays(now, applied);
+    }, 0);
+    
+    return Math.round((totalDays / interviewJobs.length) * 10) / 10;
+  }, [jobs]);
   return (
     <MainLayout>
       <Header 

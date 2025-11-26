@@ -1,16 +1,53 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, FileText, BarChart2, FileCode, Plus, Menu } from "lucide-react";
+import { LayoutDashboard, FileText, BarChart2, FileCode, Plus, Menu, CheckSquare } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
+  const { toast } = useToast();
+
+  // Check if user is logged in
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      const user = localStorage.getItem("user");
+      setIsLoggedIn(!!user);
+    };
+
+    checkLoginStatus();
+    // Listen for storage changes (e.g., when user logs in/out)
+    window.addEventListener("storage", checkLoginStatus);
+    // Listen for custom login event
+    window.addEventListener("userLoggedIn", checkLoginStatus);
+    window.addEventListener("userLoggedOut", checkLoginStatus);
+
+    return () => {
+      window.removeEventListener("storage", checkLoginStatus);
+      window.removeEventListener("userLoggedIn", checkLoginStatus);
+      window.removeEventListener("userLoggedOut", checkLoginStatus);
+    };
+  }, [location]);
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
+  };
+
+  const handleAddJobClick = (e: React.MouseEvent) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      // Dispatch custom event to trigger login dialog in Header
+      window.dispatchEvent(new CustomEvent("showLoginDialog"));
+      toast({
+        title: "Login Required",
+        description: "Please log in to add a job application.",
+        variant: "default",
+      });
+    }
   };
 
   const menuItems = [
@@ -25,12 +62,17 @@ const Sidebar: React.FC = () => {
       icon: FileText,
     },
     {
+      name: "Task Management",
+      path: "/tasks",
+      icon: CheckSquare,
+    },
+    {
       name: "Analytics",
       path: "/analytics",
       icon: BarChart2,
     },
     {
-      name: "Resume AI",
+      name: "Resume Analyzer",
       path: "/resume-analyzer",
       icon: FileCode,
     },
@@ -102,7 +144,7 @@ const Sidebar: React.FC = () => {
                 )}
               >
                 <item.icon className={cn(
-                  "h-5 w-5", 
+                  "h-5 w-5",
                   collapsed ? "mx-auto" : "mr-3",
                   isActive(item.path) ? "text-purple-600" : "text-gray-500"
                 )} />
@@ -119,7 +161,7 @@ const Sidebar: React.FC = () => {
       </nav>
 
       <div className="p-4">
-        <Link to="/add-application">
+        <Link to="/add-application" onClick={handleAddJobClick}>
           <Button
             className={cn(
               "bg-purple-600 hover:bg-purple-700 text-white w-full",

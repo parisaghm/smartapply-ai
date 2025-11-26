@@ -4,14 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "npx vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "build:server": "npx tsc --project tsconfig.server.json && mv dist/index.js dist/index.cjs",
+    "build:server": "npx tsc --project tsconfig.server.json && node scripts/rename-server.cjs",
     "server": "npm run build:server && node dist/index.cjs",
-    "dev:all": "concurrently -n WEB,API \"vite\" \"npm run server\""
+    "dev:all": "npx concurrently -n WEB,API \"vite\" \"npm run server\""
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -52,9 +52,11 @@
     "embla-carousel-react": "^8.3.0",
     "express": "^5.1.0",
     "input-otp": "^1.2.4",
+    "jspdf": "^3.0.3",
     "lucide-react": "^0.510.0",
     "next-themes": "^0.3.0",
     "openai": "^5.23.0",
+    "pdfjs-dist": "^5.4.394",
     "react": "^18.3.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-day-picker": "^8.10.1",
@@ -73,11 +75,12 @@
     "@eslint/js": "^9.9.0",
     "@tailwindcss/typography": "^0.5.15",
     "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
-    "@types/node": "^22.18.6",
+    "@types/express": "^5.0.5",
+    "@types/jspdf": "^1.3.3",
+    "@types/node": "^22.19.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react-swc": "^3.5.0",
+    "@vitejs/plugin-react-swc": "^3.11.0",
     "autoprefixer": "^10.4.20",
     "concurrently": "^9.2.1",
     "eslint": "^9.9.0",
@@ -90,6 +93,6 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
-    "vite": "^5.4.1"
+    "vite": "^5.4.21"
   }
 }
